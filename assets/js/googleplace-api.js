@@ -169,7 +169,7 @@ var GoogleApi = function (globalOpt) {
 
 	function getUserLocation () {
 	    $.ajax({
-	    	url: "http://ipinfo.io",
+	    	url: "https://ipinfo.io",
 	    	dataType: 'JSON'
 	    }).then(function(resp) {
 	    	var opt = resp;
