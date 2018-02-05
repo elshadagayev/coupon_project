@@ -55,14 +55,38 @@ var GoogleApi = function (globalOpt) {
 
 		function callback(results, status) {
 		  $('.places-wrapper').empty();
-		  placesArr = [];
+
+		  if (status == google.maps.places.PlacesServiceStatus.OK) {
+			  var marker = new google.maps.Marker({
+			      position: {
+			        lat: parseFloat(initOpt.lon),
+			        lng: parseFloat(initOpt.lat)
+			      },
+			      map,
+			      title: (initOpt.org + ' | ' || '') + 'click to zoom'
+			    });
+
+			    marker.addListener('click', function(){
+			    	var content = initOpt.org || '';
+					content += '<div>' + initOpt.city + ', ' + initOpt.region + ', ' + initOpt.country;
+			    	var infowindow = new google.maps.InfoWindow({
+			          content
+			        });
+			    	map.setZoom(8);
+					map.setCenter(marker.getPosition());
+					infowindow.open(map, marker);
+					infoWindows.push(infowindow);
+			    });
+			}
+
+		  /*placesArr = [];
 		  if (status == google.maps.places.PlacesServiceStatus.OK) {
 		    for (var i = 0; i < results.length; i++) {
 		      var place = results[i];
 		      var marker = createMarker(results[i]);
 		      placesArr.push({place,map,marker});
 		  	}
-		  }
+		  }*/
 		
 		  globalOpt.onInit({
 			places: placesArr,
@@ -172,6 +196,7 @@ var GoogleApi = function (globalOpt) {
 	    	url: "https://ipinfo.io",
 	    	dataType: 'JSON'
 	    }).then(function(resp) {
+	    	console.log(resp);
 	    	var opt = resp;
 	    	opt.loc = opt.loc.split(',');
 	    	opt.lon = opt.loc[0];

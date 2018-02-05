@@ -27,7 +27,7 @@ $(document).ready(function(){
 			}
 			
 
-			for(var i in places) {
+			/*for(var i in places) {
 				var {place, map, marker} = places[i];
 
 				var div = $('<div class="place">').html('<img class="icon" src="' + place.icon + '">');
@@ -39,15 +39,15 @@ $(document).ready(function(){
 					}
 				}(place,map,marker);
 				$('.places-wrapper').append(div);
-			}
+			}*/
 
-			var div2 = $('<div class="place">');
+			/*var div2 = $('<div class="place">');
 			var a2 = $('<a href="javascript:void(0)">').text('Show All');
 			div2.append($('<strong>').html(a2));
 			a2.on('click', function(){
 				api.reInit();
 			});
-			$('.places-wrapper').prepend(div2);
+			$('.places-wrapper').prepend(div2);*/
 		}
 	});
 
