@@ -88,9 +88,10 @@ $(document).ready(function(){
 		}
 
 		placesMarkers = [];
-		
+
 		for(var i in resp.deals) {
 			var deal = resp.deals[i].deal;
+			deal.discount_percentage *= 100;
 			var merchant = deal.merchant;
 			var wrapper = $('<div class="place">');
 			var fine_print = null;
