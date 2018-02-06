@@ -3,7 +3,7 @@ var CouponsApi = function() {
 
 	var instance = this;
 	var api_key = 'QJFzFGfHV32jEeuRaud5';
-	var api_url = 'http://api.sqoot.com/v2/deals';
+	var api_url = 'https://api.sqoot.com/v2/deals';
 
 	this.find = function (o) {
 		o = $.extend({
