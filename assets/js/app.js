@@ -91,7 +91,7 @@ $(document).ready(function(){
 
 		for(var i in resp.deals) {
 			var deal = resp.deals[i].deal;
-			deal.discount_percentage *= 100;
+			deal.discount_percentage = (deal.discount_percentage * 100).toFixed(2);
 			var merchant = deal.merchant;
 			var wrapper = $('<div class="place">');
 			var fine_print = null;
