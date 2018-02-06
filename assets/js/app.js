@@ -113,7 +113,7 @@ $(document).ready(function(){
 			}
 
 			var price = [
-				'Price: <strike>' + ( deal.price + deal.discount_amount) + '</strike> ' + deal.price + '$', 
+				'Price: <strike>' + ( deal.price + deal.discount_amount) + '$</strike> ' + deal.price + '$', 
 				'Discount amount: ' + deal.discount_amount + '$',
 				'Discount percentage: ' + deal.discount_percentage + '%',
 			];
