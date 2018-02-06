@@ -1,5 +1,7 @@
 $(document).ready(function(){
 
+	var coupons = new CouponsApi();
+
 	var api = new GoogleApi({
 		mapId: 'map',
 		autocompleteInput: document.getElementById('search'),
@@ -25,6 +27,13 @@ $(document).ready(function(){
 			} else {
 				$('#search').val(userLocation.city + ', ' + userLocation.region + ', ' + userLocation.country + ', ' + userLocation.postal);
 			}
+
+			coupons.find({
+				lon: userLocation.lon,
+				lat: userLocation.lat,
+				query: $('#search2').val(),
+				success: storePlaces
+			});
 			
 
 			/*for(var i in places) {
@@ -51,21 +60,109 @@ $(document).ready(function(){
 		}
 	});
 
-	$('#place_type').empty();
-	$('#place_type').append($('<option id="deselect_opt">').html('Deselect All'));
-	for(var i in placeTypes) {
-		var placeType = placeTypes[i];
-		$('#place_type').append($('<option selected>').html(placeType));
-	}
 
-	$('.selectpicker').selectpicker('refresh');
-
-	$('#place_type').on('change', function(){
-		
-		var deselected = $(this).find('option#deselect_opt').prop('selected');
-		if(deselected) {
-			$(this).find('option').prop('selected', false);
-			$(this).selectpicker('refresh');
-		}
+	var search2TimeoutHandler;
+	$('#search2').on('input', function(){
+		clearTimeout(search2TimeoutHandler);
+		search2TimeoutHandler = setTimeout(function(){
+			var userLocation = api.getLocation();
+			coupons.find({
+				lon: userLocation.lon,
+				lat: userLocation.lat,
+				query: $('#search2').val(),
+				success: storePlaces
+			})
+		}, 1500);
 	});
+
+	var placesMarkers = [];
+
+	function storePlaces (resp) {
+		if(!resp.deals || !Array.isArray(resp.deals))
+			return;
+
+		$('.places-wrapper').empty();
+		for(var i in placesMarkers) {
+			var marker = placesMarkers[i];
+			marker.setMap(null);
+		}
+
+		placesMarkers = [];
+		
+		for(var i in resp.deals) {
+			var deal = resp.deals[i].deal;
+			var merchant = deal.merchant;
+			var wrapper = $('<div class="place">');
+			var fine_print = null;
+			if(deal.fine_print) {
+				fine_print = $('<div style="color:#666;font-style:italic;font-weight:normal;padding-bottom:10px;">').html('Note: ' + deal.fine_print);
+			}
+			var title = $('<h2>').html($('<a>').attr({
+				href: deal.untracked_url,
+				target: '_blank'
+			}).html(merchant.name + ' - ' + deal.title));
+			var show_on_map = $('<a href="javascript:void(0);">').html('show on map');
+			var small = $('<div>').append($('<i>').html(deal.short_title + ' | ' + deal.category_name + ' | ').append(show_on_map));
+			var img = $('<img>').attr('src', deal.image_url);
+			var expires_at = moment(deal.expires_at);
+			if(expires_at.isValid()) {
+				expires_at = $('<strong>').html('Expires at ' + expires_at.format("dddd, MMMM Do YYYY, h:mm:ss a"));
+			} else {
+				expires_at = null;
+			}
+
+			var price = [
+				'Price: ' + deal.price + '$', 
+				'Discount amount: ' + deal.discount_amount + '$',
+				'Discount percentage: ' + deal.discount_percentage + '%',
+			];
+
+			if(deal.commission)
+				price.push('Commission: ' + deal.commission);
+
+			if(deal.number_sold)
+				price.push('Number sold: ' + deal.number_sold);
+
+			var price = $('<strong>').html(price.join(' | '));
+
+			wrapper
+			.append(title)
+			.append(img)
+			.append(price)
+			.append(expires_at)
+			.append(small)
+			.append($('<div>').html(deal.description))
+			.append($('<div>').css({
+				clear: 'both',
+				float: 'none'
+			}))
+			.append(fine_print);
+			$('.places-wrapper').append(wrapper);
+
+			var content = '<h3><a target="_blank" href="' + deal.untracked_url + '">' + merchant.name + '</a></h3><strong>' + deal.title + '</strong><br><strong>' + price.html() + '</strong>';
+			content += $('<div>').append(img.clone().css({
+				maxWidth: '100%'
+			})).html();
+
+			var marker = api.addMarker({
+				lon: merchant.longitude,
+				lat: merchant.latitude,
+				title: merchant.name + ' - ' + deal.title,
+				content
+			});
+
+			placesMarkers.push(marker);
+
+			(function(marker,merchantName, untracked_url, title, price,img){
+				show_on_map.on('click', function(){
+					var content = '<h3><a target="_blank" href="' + untracked_url + '">' + merchantName + '</a></h3><strong>' + title + '</strong><br><strong>' + price + '</strong>';
+					content += $('<div style="margin-top:20px;">').append(img).html();
+					api.zoomMarker(marker, content);
+					$("html, body").animate({ scrollTop: $('#map').position().top }, "slow");
+				});
+			})(marker,merchant.name, deal.untracked_url, deal.title, price.html(), img.clone().css({
+				maxWidth: '100%'
+			}));
+		}
+	}
 });

@@ -1,3 +1,21 @@
 .places-wrapper .place .icon {
 	width: 16px;
 }
+
+.place {
+	width: 100%;
+	clear: both;
+	float: none;
+	position: relative;
+	border-bottom: 1px solid #ccc;
+	margin-bottom: 20px;
+}
+
+.place img {
+	float: left;
+	margin: 0 10px 10px 0;
+	max-width: 200px;
+}
+.place strong {
+	display: block;
+}

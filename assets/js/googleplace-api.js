@@ -3,7 +3,7 @@ var GoogleApi = function (globalOpt) {
 	globalOpt = $.extend({
 		mapId: '',
 		onInit: function(){},
-		radius: 500
+		radius: 100
 	}, globalOpt);
 
 	var radius = globalOpt.radius;
@@ -14,11 +14,12 @@ var GoogleApi = function (globalOpt) {
 
 	var infoWindows = [], placesArr = [];
 
+	var map;
+
 	getUserLocation();
 
 	function init (o) {
 		var infowindow;
-		var map;
 		var service;
 		o = $.extend({
 			lon: 36.2421212,
@@ -40,7 +41,7 @@ var GoogleApi = function (globalOpt) {
 
 		  map = new google.maps.Map(document.getElementById(mapId), {
 		      center: pyrmont,
-		      zoom: o.found ? 15 : 3,
+		      zoom: o.found ? 12 : 3,
 		    });
 
 		  var request = {
@@ -57,36 +58,8 @@ var GoogleApi = function (globalOpt) {
 		  $('.places-wrapper').empty();
 
 		  if (status == google.maps.places.PlacesServiceStatus.OK) {
-			  var marker = new google.maps.Marker({
-			      position: {
-			        lat: parseFloat(initOpt.lon),
-			        lng: parseFloat(initOpt.lat)
-			      },
-			      map,
-			      title: (initOpt.org + ' | ' || '') + 'click to zoom'
-			    });
-
-			    marker.addListener('click', function(){
-			    	var content = initOpt.org || '';
-					content += '<div>' + initOpt.city + ', ' + initOpt.region + ', ' + initOpt.country;
-			    	var infowindow = new google.maps.InfoWindow({
-			          content
-			        });
-			    	map.setZoom(8);
-					map.setCenter(marker.getPosition());
-					infowindow.open(map, marker);
-					infoWindows.push(infowindow);
-			    });
+			  var marker = createMarker();
 			}
-
-		  /*placesArr = [];
-		  if (status == google.maps.places.PlacesServiceStatus.OK) {
-		    for (var i = 0; i < results.length; i++) {
-		      var place = results[i];
-		      var marker = createMarker(results[i]);
-		      placesArr.push({place,map,marker});
-		  	}
-		  }*/
 		
 		  globalOpt.onInit({
 			places: placesArr,
@@ -94,36 +67,54 @@ var GoogleApi = function (globalOpt) {
 		  });
 		}
 
-		function createMarker(place) {
+		function createMarker() {
 		    var marker = new google.maps.Marker({
 		      position: {
-		        lat: place.geometry.location.lat(),
-		        lng: place.geometry.location.lng()
+		        lat: parseFloat(initOpt.lon),
+		        lng: parseFloat(initOpt.lat)
 		      },
 		      map,
-		      title: place.name + ' | click to zoom'
+		      title: (initOpt.org || '') + ' click to zoom'
 		    });
 
 		    marker.addListener('click', function(){
-		    	instance.zoomMarker(place, map, marker);
+		    	instance.zoomMarker(marker);
 		    });
-
 		    return marker;
-
-
 	  }
 	}
 
-	this.zoomMarker = function(place, map, marker) {
-		for(var i in infoWindows) {
-			infoWindows[i].close();
-		}
+	this.addMarker = function (o) {
+		var marker = new google.maps.Marker({
+	      position: {
+	        lat: parseFloat(o.lat),
+	        lng: parseFloat(o.lon)
+	      },
+	      map,
+	      title: o.title
+	    });
 
-		var content = createContent(place);
+	    marker.addListener('click', function(){
+	    	instance.zoomMarker(marker, o.content);
+	    });
+
+	    return marker;
+	}
+
+	this.getLocation = function () {
+		return initOpt;
+	}
+
+	this.zoomMarker = function(marker, content) {
+		if(!content) {
+			content = initOpt.org || '';
+			var address = initOpt.formatted_address || (initOpt.city + ', ' + initOpt.region + ', ' + initOpt.country);
+			content += '<div>' + address + '</div>';
+		}
     	var infowindow = new google.maps.InfoWindow({
           content
         });
-    	map.setZoom(8);
+    	map.setZoom(20);
 		map.setCenter(marker.getPosition());
 		infowindow.open(map, marker);
 		infoWindows.push(infowindow);
@@ -196,7 +187,6 @@ var GoogleApi = function (globalOpt) {
 	    	url: "https://ipinfo.io",
 	    	dataType: 'JSON'
 	    }).then(function(resp) {
-	    	console.log(resp);
 	    	var opt = resp;
 	    	opt.loc = opt.loc.split(',');
 	    	opt.lon = opt.loc[0];
