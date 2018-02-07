@@ -187,6 +187,7 @@ var GoogleApi = function (globalOpt) {
 	    	url: "https://ipinfo.io",
 	    	dataType: 'JSON'
 	    }).then(function(resp) {
+	    	console.log(resp);
 	    	var opt = resp;
 	    	opt.loc = opt.loc.split(',');
 	    	opt.lon = opt.loc[0];
